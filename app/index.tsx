@@ -21,6 +21,10 @@ export default function WelcomeScreen() {
         router.push({
           pathname: '/user-profile'
         });
+      } else if (buttonId === 'medicines') {
+        router.push({
+          pathname: '/medicine-tracker'
+        });
       }
     }, 150); // Kısa bir gecikme ekleyerek butonun aktif halinin görülebilmesini sağlıyoruz
   };
