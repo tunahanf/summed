@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { UserProfileStore } from '../utils/userProfileStore';
-import LinearGradient from 'react-native-linear-gradient';
 
 // Mock function to simulate OCR processing
 const processMedicineImageWithOCR = async (imageUri: string) => {
@@ -65,31 +64,22 @@ export default function ScanMedicineScreen() {
         <Text style={styles.subtitle}>medicine box</Text>
 
         <View style={styles.cameraContainer}>
-          <LinearGradient
-            colors={['#e76f51', '#ffc7bd', '#e76f51']}
-            start={{x: 0.0, y: 0.25}} 
-            end={{x: 0.5, y: 1.0}}
-            style={styles.gradientBorderContainer}
-          >
-            <View style={styles.cameraInner}>
-              {/* Placeholder for camera - to be integrated with Python OCR model */}
-              <View style={styles.cameraPlaceholder}>
-                {isProcessing ? (
-                  <View style={styles.processingContainer}>
-                    <ActivityIndicator size="large" color="#e76f51" />
-                    <Text style={styles.processingText}>Processing...</Text>
-                  </View>
-                ) : (
-                  <TouchableOpacity 
-                    style={styles.captureButton}
-                    onPress={handleCapture}
-                  >
-                    <MaterialIcons name="camera" size={32} color="white" />
-                  </TouchableOpacity>
-                )}
+          {/* Placeholder for camera - to be integrated with Python OCR model */}
+          <View style={styles.cameraPlaceholder}>
+            {isProcessing ? (
+              <View style={styles.processingContainer}>
+                <ActivityIndicator size="large" color="#e76f51" />
+                <Text style={styles.processingText}>Processing...</Text>
               </View>
-            </View>
-          </LinearGradient>
+            ) : (
+              <TouchableOpacity 
+                style={styles.captureButton}
+                onPress={handleCapture}
+              >
+                <MaterialIcons name="camera" size={32} color="white" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -119,18 +109,11 @@ const styles = StyleSheet.create({
   },
   cameraContainer: {
     flex: 1,
-    marginBottom: 25,
-  },
-  gradientBorderContainer: {
-    flex: 1,
     borderRadius: 15,
-    padding: 3, // Border kalınlığı
-  },
-  cameraInner: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e76f51',
+    marginBottom: 25,
   },
   cameraPlaceholder: {
     flex: 1,
