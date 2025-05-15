@@ -46,7 +46,7 @@ export default function UserProfileScreen() {
       UserProfileStore.saveUserProfile(userProfile);
       
       // Navigate to scan medicine screen
-      router.push('/scan-medicine');
+      router.push('/');
     } catch (error) {
       console.error('Error saving user profile:', error);
       Alert.alert('Error', 'Failed to save your information. Please try again.');
