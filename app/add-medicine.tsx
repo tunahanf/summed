@@ -338,16 +338,21 @@ export default function AddMedicineScreen() {
           </View>
 
           <View style={styles.optionsContainer}>
-            {/* All times (predefined and custom) */}
-            {getAllTimes().map(time => renderTimeOption(time))}
+            {/* Predefined times */}
+            {timeOptions.map(time => renderTimeOption(time))}
             
-            {/* Add custom time button */}
+            {/* Add time button */}
             <TouchableOpacity 
-              style={styles.addTimeOption}
+              style={styles.optionItem}
               onPress={addCustomTime}
             >
-              <MaterialIcons name="add" size={20} color="#555" />
+              <Text style={styles.optionText}>
+                <MaterialIcons name="add" size={16} color="#505050" /> 
+              </Text>
             </TouchableOpacity>
+            
+            {/* Custom times */}
+            {customTimes.map(time => renderTimeOption(time))}
           </View>
 
           {showTimePicker && Platform.OS === 'android' && (
@@ -758,5 +763,22 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#ddd',
+  },
+  timeGroupLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#062C63',
+    marginBottom: 10,
+  },
+  predefinedTimesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 20,
+  },
+  addTimeText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#555',
+    marginLeft: 5,
   },
 }); 

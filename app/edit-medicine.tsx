@@ -287,6 +287,12 @@ export default function EditMedicineScreen() {
     return allTimes;
   };
   
+  // Check if a time is one of the predefined times
+  const isPredefinedTime = (time: string) => timeOptions.includes(time);
+
+  // Get custom times (times that aren't in the predefined list)
+  const customTimes = selectedTimes.filter(time => !isPredefinedTime(time));
+  
   // Helper function to generate hours and minutes arrays
   const generateHours = () => {
     const hours = [];
@@ -384,16 +390,21 @@ export default function EditMedicineScreen() {
           </View>
 
           <View style={styles.optionsContainer}>
-            {/* All times (predefined and custom) */}
-            {getAllTimes().map(time => renderTimeOption(time))}
+            {/* Predefined times */}
+            {timeOptions.map(time => renderTimeOption(time))}
             
-            {/* Add custom time button */}
+            {/* Add time button */}
             <TouchableOpacity 
-              style={styles.addTimeOption}
+              style={styles.optionItem}
               onPress={addCustomTime}
             >
-              <MaterialIcons name="add" size={20} color="#555" />
+              <Text style={styles.optionText}>
+                <MaterialIcons name="add" size={16} color="#505050" /> 
+              </Text>
             </TouchableOpacity>
+            
+            {/* Custom times */}
+            {customTimes.map(time => renderTimeOption(time))}
           </View>
 
           {showTimePicker && Platform.OS === 'android' && (
@@ -814,5 +825,22 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#ddd',
+  },
+  timeGroupLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#062C63',
+    marginBottom: 8,
+  },
+  predefinedTimesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  addTimeText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#555',
+    marginLeft: 8,
   },
 }); 

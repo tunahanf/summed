@@ -202,7 +202,7 @@ export default function MedicineTrackerScreen() {
 
         <TouchableOpacity 
           style={styles.saveButton}
-          onPress={() => router.back()}
+          onPress={() => router.push('/')}
         >
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
