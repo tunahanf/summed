@@ -74,6 +74,7 @@ export default function UserProfileScreen() {
             <TextInput
               style={styles.input}
               placeholder="Enter your age"
+              placeholderTextColor="#757575"
               keyboardType="number-pad"
               value={age}
               onChangeText={setAge}
@@ -85,6 +86,7 @@ export default function UserProfileScreen() {
             <TextInput
               style={styles.input}
               placeholder="Enter your height in cm"
+              placeholderTextColor="#757575"
               keyboardType="number-pad"
               value={height}
               onChangeText={setHeight}
@@ -96,6 +98,7 @@ export default function UserProfileScreen() {
             <TextInput
               style={styles.input}
               placeholder="Enter your weight in kg"
+              placeholderTextColor="#757575"
               keyboardType="number-pad"
               value={weight}
               onChangeText={setWeight}
@@ -156,6 +159,7 @@ const styles = StyleSheet.create({
     padding: 15,
     fontSize: 16,
     backgroundColor: '#f9f9f9',
+    color: '#2c3e50',
   },
   saveButton: {
     backgroundColor: '#e76f51',

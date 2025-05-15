@@ -10,6 +10,8 @@ import {
   SafeAreaView,
   StatusBar,
   Modal,
+  Vibration,
+  Dimensions,
   PanResponder
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -28,31 +30,63 @@ const MedicineItem = ({
   onEdit: (medicine: Medicine) => void; 
   onDelete: (id: string) => void; 
 }) => {
-  const swipeAnim = useRef(new Animated.Value(0)).current;
+  const translateX = useRef(new Animated.Value(0)).current;
+  const actionWidth = 100;
+  const [showingActions, setShowingActions] = useState(false);
   
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (evt, gestureState) => {
-        if (gestureState.dx < 0) { // Only allow swiping left
-          swipeAnim.setValue(Math.max(gestureState.dx, -100));
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only respond to horizontal movements
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 2);
+      },
+      onPanResponderGrant: () => {
+        // Start gesture
+      },
+      onPanResponderMove: (_, gestureState) => {
+        // Allow only left swipe (negative delta)
+        if (gestureState.dx < 0) {
+          translateX.setValue(Math.max(gestureState.dx, -actionWidth));
+        } else {
+          translateX.setValue(0);
         }
       },
-      onPanResponderRelease: (evt, gestureState) => {
-        if (gestureState.dx < -50) { // Threshold to show delete button
-          Animated.spring(swipeAnim, {
-            toValue: -100,
-            useNativeDriver: false,
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -actionWidth / 3) {
+          // Swipe past threshold - open action
+          setShowingActions(true);
+          Vibration.vibrate(10);
+          Animated.spring(translateX, {
+            toValue: -actionWidth,
+            useNativeDriver: true,
+            friction: 5,
+            tension: 40
           }).start();
         } else {
-          Animated.spring(swipeAnim, {
+          // Reset position
+          setShowingActions(false);
+          Animated.spring(translateX, {
             toValue: 0,
-            useNativeDriver: false,
+            useNativeDriver: true,
+            friction: 5,
+            tension: 40
           }).start();
         }
-      },
+      }
     })
   ).current;
+
+  // Reset function to close the actions
+  const resetPosition = () => {
+    setShowingActions(false);
+    Animated.spring(translateX, {
+      toValue: 0,
+      useNativeDriver: true,
+      friction: 5,
+      tension: 40
+    }).start();
+  };
 
   // Format the schedule for display
   const formattedSchedule = () => {
@@ -69,41 +103,65 @@ const MedicineItem = ({
     return `Every ${days.join(', ')}, ${times.join(' and ')}`;
   };
 
+  // Handle delete action
+  const handleDelete = () => {
+    Vibration.vibrate(20);
+    Animated.timing(translateX, {
+      toValue: -Dimensions.get('window').width,
+      duration: 250,
+      useNativeDriver: true
+    }).start(() => {
+      onDelete(item.id);
+    });
+  };
+
+  // Handle edit with reset
+  const handleEdit = () => {
+    resetPosition();
+    onEdit(item);
+  };
+
   return (
-    <Animated.View 
-      style={[
-        styles.medicineItemContainer,
-        { transform: [{ translateX: swipeAnim }] }
-      ]}
-      {...panResponder.panHandlers}
-    >
-      <TouchableOpacity 
-        style={styles.medicineItem}
-        onPress={() => onEdit(item)}
-      >
-        <View style={styles.medicineIcon}>
-          <MaterialIcons name="medication" size={24} color="#062C63" />
-        </View>
-        <View style={styles.medicineDetails}>
-          <Text style={styles.medicineName}>
-            {item.name} {item.dosage ? item.dosage : ''}
-          </Text>
-          <Text style={styles.medicineSchedule}>{formattedSchedule()}</Text>
-        </View>
-      </TouchableOpacity>
+    <View style={styles.itemContainer}>
+      {/* Delete action */}
+      <View style={[styles.deleteAction, { width: actionWidth }]}>
+        <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+          <MaterialIcons name="delete" size={28} color="white" />
+          <Text style={styles.deleteText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
       
-      <Animated.View style={[
-        styles.deleteContainer,
-        { width: Animated.subtract(0, swipeAnim) }
-      ]}>
+      {/* Main card that can be swiped */}
+      <Animated.View 
+        style={[
+          styles.medicineItemContainer,
+          { transform: [{ translateX }] }
+        ]}
+        {...panResponder.panHandlers}
+      >
         <TouchableOpacity 
-          style={styles.deleteButton}
-          onPress={() => onDelete(item.id)}
+          style={styles.medicineItem}
+          onPress={handleEdit}
+          activeOpacity={0.7}
         >
-          <MaterialIcons name="delete" size={24} color="white" />
+          <View style={styles.medicineIcon}>
+            <MaterialIcons name="medication" size={24} color="#062C63" />
+          </View>
+          <View style={styles.medicineDetails}>
+            <Text style={styles.medicineName}>
+              {item.name} {item.dosage ? item.dosage : ''}
+            </Text>
+            <Text style={styles.medicineSchedule}>{formattedSchedule()}</Text>
+          </View>
+          {!showingActions && (
+            <View style={styles.swipeHintContainer}>
+              <MaterialIcons name="chevron-left" size={24} color="#aaaaaa" />
+              <Text style={styles.swipeHintText}>Swipe</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </Animated.View>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -115,6 +173,13 @@ export default function MedicineTrackerScreen() {
   useEffect(() => {
     loadMedicines();
     setupNotifications();
+    
+    // Show help dialog on first load
+    Alert.alert(
+      "Tip",
+      "Swipe medicine items left to delete them",
+      [{ text: "Got it!" }]
+    );
   }, []);
 
   const setupNotifications = async () => {
@@ -140,22 +205,9 @@ export default function MedicineTrackerScreen() {
   };
 
   const handleDeleteMedicine = async (medicineId: string) => {
-    Alert.alert(
-      'Delete Medicine',
-      'Are you sure you want to delete this medicine?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            await MedicineStore.deleteMedicine(medicineId);
-            await NotificationManager.cancelMedicineReminders(medicineId);
-            loadMedicines();
-          },
-        },
-      ]
-    );
+    await MedicineStore.deleteMedicine(medicineId);
+    await NotificationManager.cancelMedicineReminders(medicineId);
+    loadMedicines();
   };
 
   // Render item now just passes the item to the MedicineItem component
@@ -235,27 +287,68 @@ const styles = StyleSheet.create({
   medicineList: {
     flexGrow: 1,
   },
-  medicineItemContainer: {
-    flexDirection: 'row',
+  itemContainer: {
+    position: 'relative',
     marginBottom: 10,
+    height: 80, // Fixed height for the item
+  },
+  deleteAction: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: '#e76f51',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 15,
-    overflow: 'hidden',
+  },
+  deleteButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  deleteIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  deleteText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  medicineItemContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    borderRadius: 15,
+    backgroundColor: '#f8f9fa',
+    zIndex: 1,
   },
   medicineItem: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 15,
     padding: 15,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    borderRadius: 15,
+    backgroundColor: '#f8f9fa',
+    height: 80, // Match container height
+    overflow: 'hidden', // Ensure content stays within the borders
   },
   medicineIcon: {
     marginRight: 15,
+    width: 30,
   },
   medicineDetails: {
     flex: 1,
+    paddingRight: 10,
   },
   medicineName: {
     fontSize: 18,
@@ -267,17 +360,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#505050',
   },
-  deleteContainer: {
-    position: 'absolute',
-    right: 0,
-    height: '100%',
-  },
-  deleteButton: {
-    backgroundColor: '#dc3545',
-    justifyContent: 'center',
+  swipeHintContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    width: 100,
-    height: '100%',
+    marginLeft: 'auto',
+    opacity: 0.7,
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  swipeHintText: {
+    fontSize: 12,
+    color: '#888888',
+    marginLeft: 2,
+    fontWeight: '500',
   },
   addButton: {
     flexDirection: 'row',
