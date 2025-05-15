@@ -390,10 +390,11 @@ export default function EditMedicineScreen() {
           </View>
 
           <View style={styles.optionsContainer}>
-            {/* Predefined times */}
+            {/* Predefined times and custom times */}
             {timeOptions.map(time => renderTimeOption(time))}
+            {customTimes.map(time => renderTimeOption(time))}
             
-            {/* Add time button */}
+            {/* Add time button (always at the end) */}
             <TouchableOpacity 
               style={styles.optionItem}
               onPress={addCustomTime}
@@ -402,9 +403,6 @@ export default function EditMedicineScreen() {
                 <MaterialIcons name="add" size={16} color="#505050" /> 
               </Text>
             </TouchableOpacity>
-            
-            {/* Custom times */}
-            {customTimes.map(time => renderTimeOption(time))}
           </View>
 
           {showTimePicker && Platform.OS === 'android' && (
