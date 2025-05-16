@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, StatusBar } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
+import { MaterialIcons, FontAwesome5, Fontisto } from '@expo/vector-icons';
+import { useState, useEffect, useRef } from 'react';
 
 // Simple in-memory storage
 import { UserProfileStore } from '../utils/userProfileStore';
@@ -35,6 +35,53 @@ const formatHowToUseText = (text: string) => {
 
   // If no prefix matches, return the text as is
   return <Text>{text}</Text>;
+};
+
+// Health icons loading component
+const HealthIconsLoading = () => {
+  const [currentIconIndex, setCurrentIconIndex] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
+  // Define health-related icons that are available in the libraries
+  type FA5IconName = React.ComponentProps<typeof FontAwesome5>['name'];
+  type FontistoIconName = React.ComponentProps<typeof Fontisto>['name'];
+  
+  interface IconInfo {
+    name: FA5IconName | FontistoIconName;
+    type: 'FontAwesome5' | 'Fontisto';
+  }
+  
+  const healthIcons: IconInfo[] = [
+    { name: 'pills', type: 'FontAwesome5' },
+    { name: 'heartbeat', type: 'FontAwesome5' },
+    { name: 'hospital', type: 'FontAwesome5' },
+    { name: 'medkit', type: 'FontAwesome5' },
+    { name: 'stethoscope', type: 'FontAwesome5' }
+  ];
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setCurrentIconIndex((prevIndex) => (prevIndex + 1) % healthIcons.length);
+    }, 500);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  const currentIcon = healthIcons[currentIconIndex];
+  
+  return (
+    <View style={styles.iconContainer}>
+      {currentIcon.type === 'FontAwesome5' ? (
+        <FontAwesome5 name={currentIcon.name as FA5IconName} size={60} color="#e76f51" />
+      ) : (
+        <Fontisto name={currentIcon.name as FontistoIconName} size={60} color="#e76f51" />
+      )}
+    </View>
+  );
 };
 
 export default function LeafletScreen() {
@@ -85,7 +132,7 @@ export default function LeafletScreen() {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <ActivityIndicator size="large" color="#e76f51" />
+        <HealthIconsLoading />
         <Text style={styles.loadingText}>Summarizing leaflet information...</Text>
       </SafeAreaView>
     );
@@ -247,5 +294,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  iconContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }); 
