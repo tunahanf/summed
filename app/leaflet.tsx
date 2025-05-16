@@ -76,9 +76,9 @@ const HealthIconsLoading = () => {
   return (
     <View style={styles.iconContainer}>
       {currentIcon.type === 'FontAwesome5' ? (
-        <FontAwesome5 name={currentIcon.name as FA5IconName} size={60} color="#e76f51" />
+        <FontAwesome5 name={currentIcon.name as FA5IconName} size={45} color="#e76f51" />
       ) : (
-        <Fontisto name={currentIcon.name as FontistoIconName} size={60} color="#e76f51" />
+        <Fontisto name={currentIcon.name as FontistoIconName} size={45} color="#e76f51" />
       )}
     </View>
   );
