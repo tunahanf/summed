@@ -3,6 +3,8 @@
  * In a real implementation, these would communicate with Python servers.
  */
 
+import { API_KEY, API_URL } from '@env';
+
 export interface OCRResult {
   medicineName: string;
   dosage: string;
@@ -25,8 +27,8 @@ export interface UserProfile {
 }
 
 // Google Gemini API Key
-const GEMINI_API_KEY = "AIzaSyCk5ADOp2Tkd4DcCeTQlAFGW5uVAhcSWzI";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const GEMINI_API_KEY = API_KEY || "";
+const GEMINI_API_URL = API_URL || "";
 
 /**
  * Processes an image to extract medication name and dosage using OCR
