@@ -5,51 +5,7 @@ import { useState, useEffect } from 'react';
 
 // Simple in-memory storage
 import { UserProfileStore } from '../utils/userProfileStore';
-
-// Define the user profile type
-interface UserProfile {
-  age: number;
-  height: number;
-  weight: number;
-  lastUpdated: string;
-}
-
-// Define the leaflet data type
-interface LeafletData {
-  name: string;
-  dosage: string;
-  intendedUse: string;
-  howToUse: string[];
-  notRecommendedFor: string;
-}
-
-// Mock function to simulate NLP processing
-const getSummarizedLeaflet = async (medicineName: string, dosage: string, userProfile: UserProfile | null): Promise<LeafletData> => {
-  console.log('Getting leaflet for:', medicineName, dosage);
-  console.log('User profile:', userProfile);
-  
-  // For demo purposes, we'll return mock data after a short delay
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Using standard dosage information regardless of profile
-      // The model will handle personalization based on the profile data
-      resolve({
-        name: medicineName,
-        dosage: dosage,
-        intendedUse: 'Used for treating severe, treatment-resistant acne.',
-        howToUse: [
-          'Usage should follow the doctor\'s instructions.',
-          'Initial dose: 40 mg/day (0.5 mg/kg/day) for adults.',
-          'Administration: Take capsules with food, once or twice daily. Swallow whole with a drink or meal.',
-          'Dosage adjustment: May be modified based on response. Typically ranges between 40-80 mg/day (0.5-1.0 mg/kg/day).',
-          'Treatment duration: Usually lasts 16-24 weeks.',
-          'Possible side effects: Acne may worsen in the first weeks. Improvement occurs with continued treatment.'
-        ],
-        notRecommendedFor: 'Not recommended for pregnant women or those who may be pregnant.'
-      });
-    }, 2000); // simulate network delay
-  });
-};
+import { UserProfile, LeafletData, getSummarizedLeaflet } from '../models/integrations';
 
 // Function to format text with bold labels
 const formatHowToUseText = (text: string) => {
@@ -141,7 +97,7 @@ export default function LeafletScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.title}>Summarized leaflet for</Text>
-          <Text style={styles.medicineName}>{leafletData.name} {leafletData.dosage}</Text>
+          <Text style={styles.medicineName}>{leafletData.name} {leafletData.dosage} mg</Text>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Intended use</Text>

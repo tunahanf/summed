@@ -2,6 +2,8 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, Text
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { UserProfileStore } from '../utils/userProfileStore';
+import { MaterialIcons } from '@expo/vector-icons';
+import { UserProfile } from '../models/integrations';
 
 export default function UserProfileScreen() {
   const [age, setAge] = useState('');
@@ -64,7 +66,7 @@ export default function UserProfileScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.title}>Your Profile</Text>
+          <Text style={styles.title}>Your profile</Text>
           <Text style={styles.subtitle}>
             {hasExistingProfile ? 'Review and update your information' : 'Please enter your information'}
           </Text>
@@ -114,6 +116,10 @@ export default function UserProfileScreen() {
               {hasExistingProfile ? 'Update' : 'Save'}
             </Text>
           </TouchableOpacity>
+          
+          <Text style={styles.infoText}>
+            Your age, height, and weight help us provide personalized medicine information. This data is used to tailor dosage recommendations and other important details specific to your profile.
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -141,7 +147,23 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 20,
     color: '#e76f51',
-    marginBottom: 30,
+    marginBottom: 15,
+  },
+  infoContainer: {
+    backgroundColor: '#f2f7ff',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 25,
+    flexDirection: 'row',
+    borderLeftWidth: 3,
+    borderLeftColor: '#0e194d',
+  },
+  infoText: {
+    fontSize: 13,
+    color: '#758399',
+    textAlign: 'center',
+    marginTop: 30,
+    fontStyle: 'italic',
   },
   inputContainer: {
     marginBottom: 20,

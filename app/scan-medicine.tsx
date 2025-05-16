@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserProfileStore } from '../utils/userProfileStore';
 
 // Mock function to simulate OCR processing
@@ -22,10 +22,45 @@ const processMedicineImageWithOCR = async (imageUri: string) => {
 
 export default function ScanMedicineScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasUserProfile, setHasUserProfile] = useState(false);
+
+  // Check if user profile exists
+  useEffect(() => {
+    const profile = UserProfileStore.getUserProfile();
+    setHasUserProfile(!!profile);
+  }, []);
 
   const handleCapture = async () => {
     setIsProcessing(true);
     
+    try {
+      // Check if user profile exists, if not, prompt to create one
+      if (!hasUserProfile) {
+        Alert.alert(
+          'Profile Information',
+          'To get personalized medicine information, you need to set up your profile first.',
+          [
+            {
+              text: 'Go to Profile',
+              onPress: () => {
+                router.push('/user-profile');
+              },
+            }
+          ]
+        );
+        setIsProcessing(false);
+        return;
+      }
+      
+      processCaptureImage();
+    } catch (error) {
+      console.error('Error processing image:', error);
+      Alert.alert('An error occurred. Please try again.');
+      setIsProcessing(false);
+    }
+  };
+  
+  const processCaptureImage = async () => {
     try {
       // Simulate taking a photo and processing with OCR
       const mockImageUri = 'mock-image-uri';
@@ -81,6 +116,24 @@ export default function ScanMedicineScreen() {
             )}
           </View>
         </View>
+        
+        <TouchableOpacity 
+          style={styles.manualEntryButton}
+          onPress={() => router.push('/manual-medicine-entry')}
+        >
+          <MaterialIcons name="edit" size={20} color="white" />
+          <Text style={styles.manualEntryButtonText}>Manual Medicine Entry</Text>
+        </TouchableOpacity>
+        
+        {!hasUserProfile && (
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => router.push('/user-profile')}
+          >
+            <MaterialIcons name="person" size={20} color="white" />
+            <Text style={styles.profileButtonText}>Set Up Your Profile</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -136,5 +189,37 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#2c3e50',
     fontSize: 16,
+  },
+  manualEntryButton: {
+    backgroundColor: '#0e194d',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  manualEntryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft: 8,
+    fontWeight: 'bold',
+  },
+  profileButton: {
+    backgroundColor: '#0e194d',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginBottom: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileButtonText: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft: 8,
+    fontWeight: 'bold',
   },
 }); 

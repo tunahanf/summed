@@ -25,6 +25,12 @@ export default function WelcomeScreen() {
         router.push({
           pathname: '/medicine-tracker'
         });
+      } else if (buttonId === 'manual-entry') {
+        if (UserProfileStore.hasUserProfile()) {
+          router.push('/manual-medicine-entry');
+        } else {
+          router.push('/user-profile');
+        }
       }
     }, 150); // Kısa bir gecikme ekleyerek butonun aktif halinin görülebilmesini sağlıyoruz
   };
@@ -57,6 +63,28 @@ export default function WelcomeScreen() {
               activeButton === 'leaflet' && styles.activeButtonText,
               {fontWeight: activeButton === 'leaflet' ? 'bold' : 'normal'}
             ]}>Get summarized leaflet</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[
+              styles.button,
+              activeButton === 'manual-entry' ? styles.activeManualEntryButton : styles.manualEntryButton
+            ]}
+            onPress={() => handleButtonPress('manual-entry')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.iconContainer}>
+              <FontAwesome5 
+                name="edit" 
+                size={24} 
+                color={activeButton === 'manual-entry' ? "white" : "#0e194d"}
+              />
+            </View>
+            <Text style={[
+              styles.buttonText,
+              activeButton === 'manual-entry' && styles.activeButtonText,
+              {fontWeight: activeButton === 'manual-entry' ? 'bold' : 'normal'}
+            ]}>Manual medicine entry</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -100,7 +128,7 @@ export default function WelcomeScreen() {
               styles.buttonText,
               activeButton === 'profile' && styles.activeButtonText,
               {fontWeight: activeButton === 'profile' ? 'bold' : 'normal'}
-            ]}>Your Profile</Text>
+            ]}>Your profile</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -157,6 +185,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#e76f51',
     borderColor: '#e76f51',
   },
+  // Manual Entry button styles
+  manualEntryButton: {
+    borderColor: '#0e194d',
+  },
+  activeManualEntryButton: {
+    backgroundColor: '#e76f51',
+    borderColor: '#e76f51',
+  },
   // Medicines button styles
   medicinesButton: {
     borderColor: '#0e194d',
@@ -193,5 +229,5 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-  },
+  }
 }); 

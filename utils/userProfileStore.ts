@@ -1,10 +1,4 @@
-// Define the user profile type
-interface UserProfile {
-  age: number;
-  height: number;
-  weight: number;
-  lastUpdated: string;
-}
+import { UserProfile } from '../models/integrations';
 
 // Simple in-memory store for user profile
 class UserProfileStoreClass {

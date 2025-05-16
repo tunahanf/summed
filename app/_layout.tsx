@@ -24,6 +24,7 @@ export default function RootLayout() {
         <Stack.Screen name="medicine-tracker" options={{ headerShown: false }} />
         <Stack.Screen name="add-medicine" options={{ headerShown: false }} />
         <Stack.Screen name="edit-medicine" options={{ headerShown: false }} />
+        <Stack.Screen name="manual-medicine-entry" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
