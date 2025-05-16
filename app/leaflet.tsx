@@ -93,6 +93,13 @@ export default function LeafletScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
+  // Function to format the dosage display
+  const formatDosage = (dosageString: string) => {
+    // Check if dosage already contains 'mg' or other unit
+    const hasMgUnit = /mg|milligram/i.test(dosageString);
+    return hasMgUnit ? dosageString : `${dosageString} mg`;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -144,7 +151,7 @@ export default function LeafletScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.title}>Summarized leaflet for</Text>
-          <Text style={styles.medicineName}>{leafletData.name} {leafletData.dosage} mg</Text>
+          <Text style={styles.medicineName}>{leafletData.name} {formatDosage(leafletData.dosage)}</Text>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Intended use</Text>
