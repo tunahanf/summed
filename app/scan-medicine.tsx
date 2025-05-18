@@ -671,12 +671,6 @@ export default function ScanMedicineScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.content}>
         <View style={styles.headerContainer}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <MaterialIcons name="arrow-back" size={24} color="#0e194d" />
-          </TouchableOpacity>
           <View>
             <Text style={styles.title}>Scan your</Text>
             <Text style={styles.subtitle}>medicine box</Text>
@@ -714,6 +708,14 @@ export default function ScanMedicineScreen() {
             <Text style={styles.profileButtonText}>Set Up Your Profile</Text>
           </TouchableOpacity>
         )}
+        
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <MaterialIcons name="arrow-back" size={20} color="white" />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -732,10 +734,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 15,
   },
   title: {
     fontSize: 28,
@@ -865,5 +863,21 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  backButton: {
+    backgroundColor: '#e76f51',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonText: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft: 8,
+    fontWeight: 'bold',
   },
 }); 
