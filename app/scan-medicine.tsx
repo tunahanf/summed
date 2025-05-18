@@ -670,8 +670,18 @@ export default function ScanMedicineScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.content}>
-        <Text style={styles.title}>Scan your</Text>
-        <Text style={styles.subtitle}>medicine box</Text>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <MaterialIcons name="arrow-back" size={24} color="#0e194d" />
+          </TouchableOpacity>
+          <View>
+            <Text style={styles.title}>Scan your</Text>
+            <Text style={styles.subtitle}>medicine box</Text>
+          </View>
+        </View>
 
         <View style={styles.cameraContainer}>
           {renderCameraContent()}
@@ -718,6 +728,15 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 25,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 15,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -728,7 +747,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#e76f51',
-    marginBottom: 20,
+    marginBottom: 0,
   },
   cameraContainer: {
     flex: 1,
