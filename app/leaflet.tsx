@@ -95,9 +95,11 @@ export default function LeafletScreen() {
 
   // Function to format the dosage display
   const formatDosage = (dosageString: string) => {
-    // Check if dosage already contains 'mg' or other unit
-    const hasMgUnit = /mg|milligram/i.test(dosageString);
-    return hasMgUnit ? dosageString : `${dosageString} mg`;
+    // Check if dosage already contains 'mg', 'ml', 'g', or other unit
+    const hasUnit = /mg|ml|milligram|miligram|milliliter|mililitre|g\b|gram/i.test(dosageString);
+    
+    // Return as is if it has a unit, otherwise append 'mg' as default
+    return hasUnit ? dosageString : `${dosageString} mg`;
   };
 
   useEffect(() => {

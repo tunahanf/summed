@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -58,6 +58,24 @@ export default function AddMedicineScreen() {
   // For iOS time picker
   const [selectedHour, setSelectedHour] = useState(10);
   const [selectedMinute, setSelectedMinute] = useState(0);
+
+  const [hourScrollRef, setHourScrollRef] = useState<ScrollView | null>(null);
+  const [minuteScrollRef, setMinuteScrollRef] = useState<ScrollView | null>(null);
+
+  // Add effect to scroll to current time when modal appears
+  useEffect(() => {
+    if (showTimePickerModal && hourScrollRef && minuteScrollRef) {
+      // Calculate scroll position (40 is the height of each item)
+      const hourScrollPos = selectedHour * 40;
+      const minuteScrollPos = selectedMinute * 40;
+      
+      // Delay scrolling slightly to ensure the modal is visible
+      setTimeout(() => {
+        hourScrollRef.scrollTo({ y: hourScrollPos, animated: false });
+        minuteScrollRef.scrollTo({ y: minuteScrollPos, animated: false });
+      }, 100);
+    }
+  }, [showTimePickerModal, hourScrollRef, minuteScrollRef]);
 
   const handleSave = async () => {
     // Validate inputs
@@ -147,7 +165,7 @@ export default function AddMedicineScreen() {
 
   const handleTimePickerChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
-      setShowTimePickerModal(false);
+      setShowTimePicker(false);
     }
     
     if (event.type === 'dismissed') {
@@ -170,13 +188,15 @@ export default function AddMedicineScreen() {
 
   const addCustomTime = () => {
     if (Platform.OS === 'ios') {
-      // Set initial values for the custom picker
+      // Set initial values for the custom picker to current time
       const now = new Date();
       setSelectedHour(now.getHours());
       setSelectedMinute(now.getMinutes());
       setShowTimePickerModal(true);
     } else {
       setShowTimePicker(true);
+      // Create a new Date object to ensure the time picker resets properly
+      setCustomTime(new Date());
     }
   };
 
@@ -402,20 +422,42 @@ export default function AddMedicineScreen() {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Select Time</Text>
                 <TouchableOpacity onPress={() => setShowTimePickerModal(false)}>
-                  <MaterialIcons name="close" size={24} color="#062C63" />
+                  <Text style={styles.modalCancelButton}>Cancel</Text>
+                </TouchableOpacity>
+                <Text style={styles.modalTitle}>Choose Time</Text>
+                <TouchableOpacity onPress={confirmIOSTimePicker}>
+                  <Text style={styles.modalDoneButton}>Done</Text>
                 </TouchableOpacity>
               </View>
               
               <View style={styles.customTimePickerContainer}>
-                {/* Hour Selector */}
+                {/* Hour Selector - styled like iOS wheel */}
                 <View style={styles.pickerColumn}>
-                  <Text style={styles.pickerLabel}>Hour</Text>
                   <ScrollView 
+                    ref={ref => setHourScrollRef(ref)}
                     style={styles.pickerScroll}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.pickerScrollContent}
+                    snapToInterval={40}
+                    decelerationRate="fast"
+                    onMomentumScrollEnd={(event) => {
+                      // Calculate which item is centered in the indicator
+                      const y = event.nativeEvent.contentOffset.y;
+                      const index = Math.floor(y / 40);
+                      if (index >= 0 && index < 24) {
+                        setSelectedHour(index);
+                      }
+                    }}
+                    onScroll={(event) => {
+                      // Update selection in real-time while scrolling
+                      const y = event.nativeEvent.contentOffset.y;
+                      const index = Math.floor(y / 40);
+                      if (index >= 0 && index < 24) {
+                        setSelectedHour(index);
+                      }
+                    }}
+                    scrollEventThrottle={16}
                   >
                     {hours.map((hour) => (
                       <Pressable
@@ -424,7 +466,10 @@ export default function AddMedicineScreen() {
                           styles.pickerItem,
                           selectedHour === parseInt(hour) && styles.selectedPickerItem
                         ]}
-                        onPress={() => setSelectedHour(parseInt(hour))}
+                        onPress={() => {
+                          setSelectedHour(parseInt(hour));
+                          hourScrollRef?.scrollTo({ y: parseInt(hour) * 40, animated: true });
+                        }}
                       >
                         <Text 
                           style={[
@@ -439,15 +484,35 @@ export default function AddMedicineScreen() {
                   </ScrollView>
                 </View>
                 
+                {/* Hour-minute separator */}
                 <Text style={styles.timeSeparator}>:</Text>
                 
-                {/* Minute Selector */}
+                {/* Minute Selector - styled like iOS wheel */}
                 <View style={styles.pickerColumn}>
-                  <Text style={styles.pickerLabel}>Minute</Text>
                   <ScrollView 
+                    ref={ref => setMinuteScrollRef(ref)}
                     style={styles.pickerScroll}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.pickerScrollContent}
+                    snapToInterval={40}
+                    decelerationRate="fast"
+                    onMomentumScrollEnd={(event) => {
+                      // Calculate which item is centered in the indicator
+                      const y = event.nativeEvent.contentOffset.y;
+                      const index = Math.floor(y / 40);
+                      if (index >= 0 && index < 60) {
+                        setSelectedMinute(index);
+                      }
+                    }}
+                    onScroll={(event) => {
+                      // Update selection in real-time while scrolling
+                      const y = event.nativeEvent.contentOffset.y;
+                      const index = Math.floor(y / 40);
+                      if (index >= 0 && index < 60) {
+                        setSelectedMinute(index);
+                      }
+                    }}
+                    scrollEventThrottle={16}
                   >
                     {minutes.map((minute) => (
                       <Pressable
@@ -456,7 +521,10 @@ export default function AddMedicineScreen() {
                           styles.pickerItem,
                           selectedMinute === parseInt(minute) && styles.selectedPickerItem
                         ]}
-                        onPress={() => setSelectedMinute(parseInt(minute))}
+                        onPress={() => {
+                          setSelectedMinute(parseInt(minute));
+                          minuteScrollRef?.scrollTo({ y: parseInt(minute) * 40, animated: true });
+                        }}
                       >
                         <Text 
                           style={[
@@ -470,20 +538,12 @@ export default function AddMedicineScreen() {
                     ))}
                   </ScrollView>
                 </View>
+
+                {/* Selection indicator overlay */}
+                <View style={styles.selectionIndicator}>
+                  <View style={styles.selectionLine} />
+                </View>
               </View>
-              
-              <View style={styles.selectedTimePreview}>
-                <Text style={styles.selectedTimeText}>
-                  {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
-                </Text>
-              </View>
-              
-              <TouchableOpacity 
-                style={styles.confirmTimeButton}
-                onPress={confirmIOSTimePicker}
-              >
-                <Text style={styles.confirmTimeText}>Add Time</Text>
-              </TouchableOpacity>
             </View>
           </View>
         </Modal>
@@ -638,111 +698,130 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: '80%',
-    backgroundColor: 'white',
-    borderRadius: 15,
-    padding: 20,
+    width: '100%',
+    backgroundColor: '#1a1a1a',
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    paddingBottom: 30,
   },
   modalHeader: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#062C63',
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  modalCancelButton: {
+    fontSize: 17,
+    color: '#ffffff',
+    opacity: 0.7,
+  },
+  modalDoneButton: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#0A84FF',
   },
   customTimePickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    marginBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+    backgroundColor: 'transparent',
+    position: 'relative',
+    height: 260,
   },
   pickerColumn: {
-    width: '40%',
+    width: '35%',
     alignItems: 'center',
-  },
-  pickerLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#062C63',
-    marginBottom: 8,
+    height: 220,
+    justifyContent: 'center',
   },
   pickerScroll: {
-    height: 150,
+    height: 220,
     width: '100%',
   },
   pickerScrollContent: {
     alignItems: 'center',
-    paddingVertical: 60, // Add padding to allow scrolling to all items
+    paddingVertical: 90,
   },
   pickerItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginVertical: 2,
-    borderRadius: 8,
-    width: '80%',
+    paddingVertical: 5,
+    width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    display: 'flex',
   },
   selectedPickerItem: {
-    backgroundColor: '#e76f51',
+    backgroundColor: 'transparent',
   },
   pickerItemText: {
-    fontSize: 18,
-    color: '#444',
+    fontSize: 22,
+    color: '#999999',
+    fontWeight: '400',
+    textAlign: 'center',
+    width: '100%',
+    lineHeight: 40,
+    textAlignVertical: 'center',
   },
   selectedPickerItemText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: '500',
   },
   timeSeparator: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#062C63',
-    marginHorizontal: 10,
-    marginTop: 25,
+    fontWeight: '500',
+    color: '#ffffff',
+    marginHorizontal: 5,
+    height: 40,
+    textAlignVertical: 'center',
+    lineHeight: 40,
   },
-  selectedTimePreview: {
-    backgroundColor: '#f2f2f2',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 20,
-    width: '100%',
+  selectionIndicator: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    pointerEvents: 'none',
+    paddingBottom: 0,
   },
-  selectedTimeText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#062C63',
-  },
-  confirmTimeButton: {
-    backgroundColor: '#e76f51',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-  },
-  confirmTimeText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+  selectionLine: {
+    width: '90%',
+    height: 40,
+    backgroundColor: 'rgba(40, 40, 40, 0.05)',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(8px)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    marginTop: 0,
+    top: 0,
   },
   androidPickerContainer: {
     backgroundColor: '#f8f9fa',
