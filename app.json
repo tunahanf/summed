@@ -8,7 +8,7 @@
     "scheme": "summed",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash-screen.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
@@ -22,18 +22,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.flexy.summed",
-      "softwareKeyboardLayoutMode": "pan",
-      "splash": {
-        "resizeMode": "cover",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "androidStatusBar": {
-      "hidden": true
-    },
-    "androidNavigationBar": {
-      "visible": "immersive"
+      "package": "com.flexy.summed"
     },
     "web": {
       "bundler": "metro",
