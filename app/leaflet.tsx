@@ -87,7 +87,7 @@ const HealthIconsLoading = () => {
 export default function LeafletScreen() {
   const params = useLocalSearchParams();
   const medicineName = params.medicineName as string || 'Zoretanin';
-  const dosage = params.dosage as string || '20mg';
+  const dosage = params.dosage as string || '20 mg';
   
   const [leafletData, setLeafletData] = useState<LeafletData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
