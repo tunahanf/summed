@@ -3,9 +3,12 @@ import { router } from 'expo-router';
 import { FontAwesome5, FontAwesome } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { UserProfileStore } from '../utils/userProfileStore';
+import { LanguageStore } from '../utils/languageStore';
+import { translations } from '../utils/translations';
 
 export default function WelcomeScreen() {
   const [activeButton, setActiveButton] = useState<string | null>(null);
+  const [language, setLanguage] = useState<'en' | 'tr'>(LanguageStore.getLanguage());
 
   const handleButtonPress = (buttonId: string) => {
     setActiveButton(buttonId);
@@ -35,11 +38,27 @@ export default function WelcomeScreen() {
     }, 150); // Kısa bir gecikme ekleyerek butonun aktif halinin görülebilmesini sağlıyoruz
   };
 
+  const toggleLanguage = () => {
+    const newLanguage = LanguageStore.toggleLanguage();
+    setLanguage(newLanguage);
+  };
+
+  const t = translations[language];
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome to</Text>
+        <TouchableOpacity 
+          style={styles.languageButton}
+          onPress={toggleLanguage}
+        >
+          <Text style={styles.languageButtonText}>
+            {language === 'en' ? 'TR' : 'EN'}
+          </Text>
+        </TouchableOpacity>
+        
+        <Text style={styles.title}>{t.welcome}</Text>
         <Text style={styles.brandName}>SumMed</Text>
 
         <View style={styles.buttonContainer}>
@@ -62,7 +81,7 @@ export default function WelcomeScreen() {
               styles.buttonText,
               activeButton === 'leaflet' && styles.activeButtonText,
               {fontWeight: activeButton === 'leaflet' ? 'bold' : 'normal'}
-            ]}>Get summarized leaflet</Text>
+            ]}>{language === 'en' ? 'Get summarized leaflet' : t.getSummarizedLeaflet}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -84,7 +103,7 @@ export default function WelcomeScreen() {
               styles.buttonText,
               activeButton === 'manual-entry' && styles.activeButtonText,
               {fontWeight: activeButton === 'manual-entry' ? 'bold' : 'normal'}
-            ]}>Manual medicine entry</Text>
+            ]}>{language === 'en' ? 'Manual medicine entry' : t.manualMedicineEntry}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -106,7 +125,7 @@ export default function WelcomeScreen() {
               styles.buttonText,
               activeButton === 'medicines' && styles.activeButtonText,
               {fontWeight: activeButton === 'medicines' ? 'bold' : 'normal'}
-            ]}>Track your medicines</Text>
+            ]}>{language === 'en' ? 'Track your medicines' : t.trackYourMedicines}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -128,7 +147,7 @@ export default function WelcomeScreen() {
               styles.buttonText,
               activeButton === 'profile' && styles.activeButtonText,
               {fontWeight: activeButton === 'profile' ? 'bold' : 'normal'}
-            ]}>Your profile</Text>
+            ]}>{language === 'en' ? 'Your profile' : t.yourProfile}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -229,5 +248,20 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  languageButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#0e194d',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    zIndex: 10,
+  },
+  languageButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   }
 }); 

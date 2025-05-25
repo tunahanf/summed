@@ -19,19 +19,24 @@ import { Medicine } from '../models/medicine';
 import { MedicineStore } from '../utils/medicineStore';
 import { router } from 'expo-router';
 import { NotificationManager } from '../utils/notificationManager';
+import { LanguageStore } from '../utils/languageStore';
+import { translations } from '../utils/translations';
 
 // Separate component for medicine item to properly use hooks
 const MedicineItem = ({ 
   item, 
   onEdit, 
-  onDelete 
+  onDelete,
+  language
 }: { 
   item: Medicine; 
   onEdit: (medicine: Medicine) => void; 
-  onDelete: (id: string) => void; 
+  onDelete: (id: string) => void;
+  language: 'en' | 'tr';
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const pan = useRef(new Animated.ValueXY()).current;
+  const t = translations[language];
 
   // Set up PanResponder
   const panResponder = useRef(
@@ -78,13 +83,13 @@ const MedicineItem = ({
     
     if (days.length === 1) {
       if (days[0] === 'Every Day') {
-        return `Every Day, ${times.join(' and ')}`;
+        return `${t.everyDay}, ${times.join(` ${t.and} `)}`;
       }
-      return `Every ${days[0]}, ${times.join(' and ')}`;
+      return `${t.every} ${days[0]}, ${times.join(` ${t.and} `)}`;
     }
     
     // Handle specific days
-    return `Every ${days.join(', ')}, ${times.join(' and ')}`;
+    return `${t.every} ${days.join(', ')}, ${times.join(` ${t.and} `)}`;
   };
 
   return (
@@ -144,10 +149,23 @@ export default function MedicineTrackerScreen() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [loading, setLoading] = useState(true);
   const [addMedicineModalVisible, setAddMedicineModalVisible] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'tr'>(LanguageStore.getLanguage());
+  
+  const t = translations[language];
 
   useEffect(() => {
     loadMedicines();
     setupNotifications();
+    
+    // Update language when it changes in the store
+    const intervalId = setInterval(() => {
+      const currentLang = LanguageStore.getLanguage();
+      if (currentLang !== language) {
+        setLanguage(currentLang);
+      }
+    }, 300);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const setupNotifications = async () => {
@@ -184,7 +202,8 @@ export default function MedicineTrackerScreen() {
       <MedicineItem 
         item={item} 
         onEdit={handleEditMedicine} 
-        onDelete={handleDeleteMedicine} 
+        onDelete={handleDeleteMedicine}
+        language={language}
       />
     );
   };
@@ -193,39 +212,45 @@ export default function MedicineTrackerScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.content}>
-        <Text style={styles.title}>Track your</Text>
-        <Text style={styles.subtitle}>medicines</Text>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>{t.trackYour}</Text>
+            <Text style={styles.subtitle}>{t.medicines}</Text>
+          </View>
+        </View>
 
         {medicines.length === 0 && !loading ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              There is no medicine that can be tracked.
-            </Text>
-            <Text style={styles.emptySubtext}>Add to track</Text>
+            <MaterialIcons name="medication" size={60} color="#e0e0e0" />
+            <Text style={styles.emptyText}>{t.noMedicines}</Text>
+            <Text style={styles.emptySubtext}>{t.addYourFirst}</Text>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={handleAddMedicine}
+            >
+              <MaterialIcons name="add" size={24} color="white" />
+              <Text style={styles.addButtonText}>{t.addMedicine}</Text>
+            </TouchableOpacity>
           </View>
         ) : (
-          <FlatList
-            data={medicines}
-            renderItem={renderMedicineItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.medicineList}
-          />
+          <>
+            <FlatList
+              data={medicines}
+              renderItem={renderMedicineItem}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listContainer}
+              showsVerticalScrollIndicator={false}
+            />
+            
+            <TouchableOpacity 
+              style={styles.floatingButton}
+              onPress={handleAddMedicine}
+            >
+              <MaterialIcons name="add" size={24} color="white" />
+              <Text style={styles.floatingButtonText}>{t.addMedicine}</Text>
+            </TouchableOpacity>
+          </>
         )}
-
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={handleAddMedicine}
-        >
-          <MaterialIcons name="add" size={24} color="#062C63" />
-          <Text style={styles.addButtonText}>Add Medicine</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.saveButton}
-          onPress={() => router.push('/')}
-        >
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -238,134 +263,135 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 25,
+    padding: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#062C63',
-    marginBottom: 5,
+    color: '#0e194d',
   },
   subtitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#e76f51',
-    marginBottom: 20,
+    marginBottom: 10,
   },
-  medicineList: {
-    flexGrow: 1,
+  listContainer: {
+    paddingBottom: 80,
   },
   itemContainer: {
     position: 'relative',
     marginBottom: 10,
-    height: 80,
-  },
-  deleteButton: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: 80,
-    backgroundColor: '#ff5252',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 15,
   },
   medicineItemContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 15,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1,
   },
   medicineItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
-    height: '100%',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 15,
   },
   medicineIcon: {
+    backgroundColor: '#e7f0ff',
+    padding: 10,
+    borderRadius: 10,
     marginRight: 15,
   },
   medicineDetails: {
     flex: 1,
   },
   medicineName: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#062C63',
-    marginBottom: 5,
+    marginBottom: 4,
   },
   medicineSchedule: {
     fontSize: 14,
-    color: '#505050',
+    color: '#666',
   },
   swipeHint: {
-    width: 30,
-    height: 30,
-    borderRadius: 15, 
-    backgroundColor: '#f0f0f0',
-    alignItems: 'center',
+    padding: 5,
+  },
+  deleteButton: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: '#ff5252',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  addButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 25,
-    padding: 15,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#062C63',
-  },
-  addButtonText: {
-    marginLeft: 10,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#062C63',
-  },
-  saveButton: {
-    backgroundColor: '#e76f51',
-    borderRadius: 25,
-    padding: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    width: 80,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    zIndex: 0,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#505050',
-    textAlign: 'center',
-    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#062C63',
+    marginTop: 20,
   },
   emptySubtext: {
     fontSize: 16,
-    color: '#505050',
+    color: '#666',
     textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 30,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e76f51',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+  },
+  addButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  floatingButton: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    backgroundColor: '#e76f51',
+    borderRadius: 25,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  floatingButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginLeft: 8,
   },
 }); 

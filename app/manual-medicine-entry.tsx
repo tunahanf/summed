@@ -4,39 +4,54 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { UserProfileStore } from '../utils/userProfileStore';
 import { UserProfile } from '../models/integrations';
+import { LanguageStore } from '../utils/languageStore';
+import { translations } from '../utils/translations';
 
 export default function ManualMedicineEntryScreen() {
   const [medicineName, setMedicineName] = useState('');
   const [dosage, setDosage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasUserProfile, setHasUserProfile] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'tr'>(LanguageStore.getLanguage());
 
-  // Check if user profile exists
+  const t = translations[language];
+
+  // Check if user profile exists and monitor language changes
   useEffect(() => {
     const profile = UserProfileStore.getUserProfile();
     setHasUserProfile(!!profile);
+    
+    // Update language when it changes in the store
+    const intervalId = setInterval(() => {
+      const currentLang = LanguageStore.getLanguage();
+      if (currentLang !== language) {
+        setLanguage(currentLang);
+      }
+    }, 300);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleSubmit = async () => {
     // Validate inputs
     if (!medicineName.trim()) {
-      Alert.alert('Error', 'Please enter the medicine name');
+      Alert.alert(t.error, t.medicineName);
       return;
     }
 
     if (!dosage.trim()) {
-      Alert.alert('Error', 'Please enter the dosage information');
+      Alert.alert(t.error, t.dosage);
       return;
     }
 
     // Check if user profile exists, if not, prompt to create one
     if (!hasUserProfile) {
       Alert.alert(
-        'Profile Information',
-        'To get personalized medicine information, you need to set up your profile first.',
+        t.profileRequired,
+        t.profileRequiredMessage,
         [
           {
-            text: 'Setup Profile',
+            text: t.setupProfile,
             onPress: () => {
               router.push('/user-profile');
             },
@@ -63,7 +78,7 @@ export default function ManualMedicineEntryScreen() {
       });
     } catch (error) {
       console.error('Error submitting data:', error);
-      Alert.alert('An error occurred. Please try again.');
+      Alert.alert(t.error);
     } finally {
       setIsSubmitting(false);
     }
@@ -79,27 +94,27 @@ export default function ManualMedicineEntryScreen() {
         >
           <MaterialIcons name="arrow-back" size={24} color="#0e194d" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Manual medicine entry</Text>
+        <Text style={styles.headerTitle}>{t.manualEntryTitle}</Text>
       </View>
       
       <ScrollView style={styles.content}>
-        <Text style={styles.title}>Enter medicine details</Text>
-        <Text style={styles.subtitle}>Please provide the medicine information</Text>
+        <Text style={styles.title}>{t.enterMedicineDetails}</Text>
+        <Text style={styles.subtitle}>{t.provideMedicineInfo}</Text>
 
         <View style={styles.formContainer}>
-          <Text style={styles.inputLabel}>Medicine name</Text>
+          <Text style={styles.inputLabel}>{t.medicineName}</Text>
           <TextInput
             style={styles.input}
-            placeholder="e.g., Parol"
+            placeholder={t.medicinePlaceholder}
             value={medicineName}
             onChangeText={setMedicineName}
             autoCapitalize="words"
           />
 
-          <Text style={styles.inputLabel}>Dosage(mg)</Text>
+          <Text style={styles.inputLabel}>{t.dosage}</Text>
           <TextInput
             style={styles.input}
-            placeholder="e.g., 500"
+            placeholder={t.dosagePlaceholder}
             value={dosage}
             onChangeText={setDosage}
             keyboardType="number-pad"
@@ -113,7 +128,7 @@ export default function ManualMedicineEntryScreen() {
             {isSubmitting ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
-              <Text style={styles.submitButtonText}>Get summarized leaflet</Text>
+              <Text style={styles.submitButtonText}>{t.getSummarized}</Text>
             )}
           </TouchableOpacity>
           
@@ -123,7 +138,7 @@ export default function ManualMedicineEntryScreen() {
               onPress={() => router.push('/user-profile')}
             >
               <MaterialIcons name="person" size={20} color="white" />
-              <Text style={styles.profileButtonText}>Set up your profile</Text>
+              <Text style={styles.profileButtonText}>{t.setupProfile}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -153,6 +168,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#0e194d',
     marginLeft: 15,
+    flex: 1,
   },
   content: {
     flex: 1,
@@ -218,5 +234,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 8,
     fontWeight: 'bold',
-  },
+  }
 }); 

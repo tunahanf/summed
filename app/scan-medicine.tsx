@@ -6,6 +6,8 @@ import { UserProfileStore } from '../utils/userProfileStore';
 import { CameraView, CameraCapturedPicture, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LanguageStore } from '../utils/languageStore';
+import { translations } from '../utils/translations';
 
 // Import the HealthIconsLoading component from Leaflet or recreate it here
 // Health icons loading component
@@ -85,11 +87,21 @@ export default function ScanMedicineScreen() {
   const hasNavigated = useRef(false);
   const navigation = useNavigation();
   const waitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [language, setLanguage] = useState<'en' | 'tr'>(LanguageStore.getLanguage());
+  const t = translations[language];
 
-  // Check if user profile exists and handle navigation events
+  // Update useEffect to monitor language changes
   useEffect(() => {
     const profile = UserProfileStore.getUserProfile();
     setHasUserProfile(!!profile);
+    
+    // Update language when it changes in the store
+    const languageIntervalId = setInterval(() => {
+      const currentLang = LanguageStore.getLanguage();
+      if (currentLang !== language) {
+        setLanguage(currentLang);
+      }
+    }, 300);
     
     // Reset state when screen comes into focus
     const unsubscribe = navigation.addListener('focus', () => {
@@ -117,6 +129,7 @@ export default function ScanMedicineScreen() {
         clearTimeout(waitTimeoutRef.current);
         waitTimeoutRef.current = null;
       }
+      clearInterval(languageIntervalId);
       unsubscribe();
     };
   }, [navigation]);
@@ -165,11 +178,11 @@ export default function ScanMedicineScreen() {
     if (!cameraRef.current) {
       console.error('Camera reference is not available');
       Alert.alert(
-        'Camera Error', 
-        'Could not access the camera. Do you want to use test data instead?',
+        t.cameraError, 
+        t.cameraPermissionMessage,
         [
           {
-            text: 'Use Test Data',
+            text: t.useTestData,
             onPress: () => {
               // Use mock data to navigate to leaflet
               console.log('Using test data instead');
@@ -186,7 +199,7 @@ export default function ScanMedicineScreen() {
             }
           },
           {
-            text: 'Cancel',
+            text: t.cancel,
             style: 'cancel',
             onPress: () => {
               setIsProcessing(false);
@@ -265,11 +278,11 @@ export default function ScanMedicineScreen() {
           
           // Offer to use test data when medicine recognition fails
           Alert.alert(
-            'Recognition Failed', 
-            'Could not recognize the medicine. Would you like to use test data instead?',
+            t.recognitionFailed, 
+            t.recognitionFailedMessage,
             [
               {
-                text: 'Use Test Data',
+                text: t.useTestData,
                 onPress: () => {
                   // Navigate with test data
                   hasNavigated.current = true;
@@ -283,7 +296,7 @@ export default function ScanMedicineScreen() {
                 }
               },
               {
-                text: 'Try Again',
+                text: t.tryAgain,
                 onPress: () => {
                   setIsProcessing(false);
                   // Clear captured image to allow taking a new photo
@@ -305,11 +318,11 @@ export default function ScanMedicineScreen() {
         
         // Offer to use test data when API processing fails
         Alert.alert(
-          'Processing Error', 
-          'An error occurred when processing the image. Would you like to use test data instead?',
+          t.processingError, 
+          t.processingErrorMessage,
           [
             {
-              text: 'Use Test Data',
+              text: t.useTestData,
               onPress: () => {
                 // Navigate with test data
                 hasNavigated.current = true;
@@ -323,7 +336,7 @@ export default function ScanMedicineScreen() {
               }
             },
             {
-              text: 'Try Again',
+              text: t.tryAgain,
               onPress: () => {
                 setIsProcessing(false);
                 // Clear captured image to allow taking a new photo
@@ -345,11 +358,11 @@ export default function ScanMedicineScreen() {
       setIsProcessing(false); // Stop processing indicator
       
       Alert.alert(
-        'Camera Error', 
-        'Could not capture image. Would you like to use test data instead?',
+        t.cameraError, 
+        t.cameraPermissionMessage,
         [
           {
-            text: 'Use Test Data',
+            text: t.useTestData,
             onPress: () => {
               // Navigate with test data
               hasNavigated.current = true;
@@ -357,13 +370,13 @@ export default function ScanMedicineScreen() {
                 pathname: '/leaflet',
                 params: {
                   medicineName: 'Zoretanin',
-                  dosage: '20mg'
+                  dosage: '20 mg'
                 }
               });
             }
           },
           {
-            text: 'Cancel',
+            text: t.cancel,
             style: 'cancel',
             onPress: () => {
               setIsProcessing(false);
@@ -531,11 +544,11 @@ export default function ScanMedicineScreen() {
     // Check if user profile exists, if not, prompt to create one
     if (!hasUserProfile) {
       Alert.alert(
-        'Profile Information',
-        'To get personalized medicine information, you need to set up your profile first.',
+        t.profileInformationTitle,
+        t.profileInformationMessage,
         [
           {
-            text: 'Go to Profile',
+            text: t.goToProfile,
             onPress: () => {
               router.push('/user-profile');
             },
@@ -551,18 +564,18 @@ export default function ScanMedicineScreen() {
       const permission = await requestCameraPermission();
       if (!permission.granted) {
         Alert.alert(
-          'Camera Access Required',
+          t.cameraAccessRequiredTitle,
           permission.canAskAgain 
-            ? 'Please grant camera access to scan medicine boxes.'
-            : 'Camera permission is required but has been denied. Please enable it in your device settings.',
+            ? t.cameraAccessRequiredMessage
+            : t.cameraPermissionDeniedMessage,
           permission.canAskAgain ? [
             {
-              text: 'Grant Permission',
+              text: t.grantPermission,
               onPress: requestCameraPermission
             },
-            { text: 'Cancel', style: 'cancel' }
+            { text: t.cancel, style: 'cancel' }
           ] : [
-            { text: 'OK' }
+            { text: t.ok }
           ]
         );
         return;
@@ -603,7 +616,7 @@ export default function ScanMedicineScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           <ActivityIndicator size="large" color="#e76f51" />
-          <Text style={styles.processingText}>Checking camera permission...</Text>
+          <Text style={styles.processingText}>{t.checkingCameraPermission}</Text>
         </View>
       </SafeAreaView>
     );
@@ -617,7 +630,7 @@ export default function ScanMedicineScreen() {
           <View style={styles.cameraPlaceholder}>
             <ActivityIndicator size="large" color="#e76f51" />
             <Text style={styles.cameraInstructionText}>
-              Camera permission required
+              {t.cameraPermissionRequired}
             </Text>
           </View>
         );
@@ -644,7 +657,7 @@ export default function ScanMedicineScreen() {
           {isProcessing && (
             <View style={styles.processingOverlay}>
               <ActivityIndicator size="large" color="#FFFFFF" />
-              <Text style={styles.processingOverlayText}>Processing medicine information...</Text>
+              <Text style={styles.processingOverlayText}>{t.processingImage}</Text>
             </View>
           )}
         </View>
@@ -659,7 +672,7 @@ export default function ScanMedicineScreen() {
             <MaterialIcons name="camera" size={32} color="white" />
           </TouchableOpacity>
           <Text style={styles.cameraInstructionText}>
-            Tap to start scanning
+            {t.tapToStartScanning}
           </Text>
         </View>
       );
@@ -672,8 +685,8 @@ export default function ScanMedicineScreen() {
       <View style={styles.content}>
         <View style={styles.headerContainer}>
           <View>
-            <Text style={styles.title}>Scan your</Text>
-            <Text style={styles.subtitle}>medicine box</Text>
+            <Text style={styles.title}>{t.scanYour}</Text>
+            <Text style={styles.subtitle}>{t.medicineBox}</Text>
           </View>
         </View>
 
@@ -687,7 +700,7 @@ export default function ScanMedicineScreen() {
             onPress={handleStopScan}
           >
             <MaterialIcons name="stop" size={20} color="white" />
-            <Text style={styles.stopScanButtonText}>Stop Scanning</Text>
+            <Text style={styles.stopScanButtonText}>{t.stopScanning}</Text>
           </TouchableOpacity>
         )}
         
@@ -696,7 +709,7 @@ export default function ScanMedicineScreen() {
           onPress={() => router.push('/manual-medicine-entry')}
         >
           <MaterialIcons name="edit" size={20} color="white" />
-          <Text style={styles.manualEntryButtonText}>Manual Medicine Entry</Text>
+          <Text style={styles.manualEntryButtonText}>{t.manualMedicineEntry}</Text>
         </TouchableOpacity>
         
         {!hasUserProfile && (
@@ -705,7 +718,7 @@ export default function ScanMedicineScreen() {
             onPress={() => router.push('/user-profile')}
           >
             <MaterialIcons name="person" size={20} color="white" />
-            <Text style={styles.profileButtonText}>Set Up Your Profile</Text>
+            <Text style={styles.profileButtonText}>{t.setUpYourProfile}</Text>
           </TouchableOpacity>
         )}
         
@@ -714,7 +727,7 @@ export default function ScanMedicineScreen() {
           onPress={() => router.back()}
         >
           <MaterialIcons name="arrow-back" size={20} color="white" />
-          <Text style={styles.backButtonText}>Back</Text>
+          <Text style={styles.backButtonText}>{t.back}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

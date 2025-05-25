@@ -6,27 +6,29 @@ import { useState, useEffect, useRef } from 'react';
 // Simple in-memory storage
 import { UserProfileStore } from '../utils/userProfileStore';
 import { UserProfile, LeafletData, getSummarizedLeaflet } from '../models/integrations';
+import { LanguageStore } from '../utils/languageStore';
+import { translations } from '../utils/translations';
 
 // Function to format text with bold labels
-const formatHowToUseText = (text: string) => {
-  // List of prefixes that should be bold
-  const boldPrefixes = [
-    'Initial dose:',
-    'Administration:',
-    'Dosage adjustment:',
-    'Treatment duration:',
-    'Possible side effects:'
-  ];
+const formatHowToUseText = (text: string, t: any) => {
+  // List of prefixes that should be bold with their translations
+  const boldPrefixMap: Record<string, string> = {
+    'Initial dose:': t.initialDose,
+    'Administration:': t.administration,
+    'Dosage adjustment:': t.dosageAdjustment,
+    'Treatment duration:': t.treatmentDuration,
+    'Possible side effects:': t.possibleSideEffects
+  };
 
   // Check if the text starts with any of the bold prefixes
-  for (const prefix of boldPrefixes) {
-    if (text.startsWith(prefix)) {
-      const prefixEnd = prefix.length;
+  for (const [englishPrefix, translatedPrefix] of Object.entries(boldPrefixMap)) {
+    if (text.startsWith(englishPrefix)) {
+      const prefixEnd = englishPrefix.length;
       const restOfText = text.substring(prefixEnd);
       
       return (
         <Text>
-          <Text style={styles.boldLabel}>{prefix}</Text>
+          <Text style={styles.boldLabel}>{translatedPrefix}</Text>
           <Text>{restOfText}</Text>
         </Text>
       );
@@ -92,6 +94,9 @@ export default function LeafletScreen() {
   const [leafletData, setLeafletData] = useState<LeafletData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [language, setLanguage] = useState<'en' | 'tr'>(LanguageStore.getLanguage());
+  
+  const t = translations[language];
 
   // Function to format the dosage display
   const formatDosage = (dosageString: string) => {
@@ -135,6 +140,16 @@ export default function LeafletScreen() {
     };
 
     fetchData();
+    
+    // Update language when it changes in the store
+    const intervalId = setInterval(() => {
+      const currentLang = LanguageStore.getLanguage();
+      if (currentLang !== language) {
+        setLanguage(currentLang);
+      }
+    }, 300);
+    
+    return () => clearInterval(intervalId);
   }, [medicineName, dosage]);
 
   if (isLoading || !leafletData) {
@@ -142,7 +157,7 @@ export default function LeafletScreen() {
       <SafeAreaView style={styles.loadingContainer}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <HealthIconsLoading />
-        <Text style={styles.loadingText}>Summarizing leaflet information...</Text>
+        <Text style={styles.loadingText}>{t.summarizingLeaflet}</Text>
       </SafeAreaView>
     );
   }
@@ -152,32 +167,32 @@ export default function LeafletScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.title}>Summarized leaflet for</Text>
+          <Text style={styles.title}>{t.summarizedLeafletFor}</Text>
           <Text style={styles.medicineName}>{leafletData.name} {formatDosage(leafletData.dosage)}</Text>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Intended use</Text>
+            <Text style={styles.sectionTitle}>{t.intendedUse}</Text>
             <Text style={styles.sectionText}>{leafletData.intendedUse}</Text>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>How to use</Text>
+            <Text style={styles.sectionTitle}>{t.howToUse}</Text>
             {leafletData.howToUse.map((item: string, index: number) => (
               <View key={index} style={styles.bulletPoint}>
                 <MaterialIcons name="fiber-manual-record" size={8} color="#0e194d" style={styles.bullet} />
                 <Text style={styles.bulletText}>
-                  {formatHowToUseText(item)}
+                  {formatHowToUseText(item, t)}
                 </Text>
               </View>
             ))}
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Not recommended for</Text>
+            <Text style={styles.sectionTitle}>{t.notRecommendedFor}</Text>
             <Text style={styles.sectionText}>{leafletData.notRecommendedFor}</Text>
           </View>
 
-          <Text style={styles.disclaimerText}>Bu özet, genel bir bilgilendirme amaçlıdır. Hastanın özel durumu, tıbbi geçmişi ve diğer ilaçları dikkate alınarak doktor tarafından kişiye özel bir tedavi planı oluşturulmalıdır.</Text>
+          <Text style={styles.disclaimerText}>{t.disclaimer}</Text>
 
           <TouchableOpacity
             style={styles.nextButton}
@@ -185,7 +200,7 @@ export default function LeafletScreen() {
               pathname: '/'
             })}
           >
-            <Text style={styles.nextButtonText}>Next</Text>
+            <Text style={styles.nextButtonText}>{t.next}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { UserProfileStore } from '../utils/userProfileStore';
 import { MaterialIcons } from '@expo/vector-icons';
 import { UserProfile } from '../models/integrations';
+import { LanguageStore } from '../utils/languageStore';
+import { translations } from '../utils/translations';
 
 export default function UserProfileScreen() {
   const [age, setAge] = useState('');
@@ -11,6 +13,7 @@ export default function UserProfileScreen() {
   const [weight, setWeight] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingProfile, setHasExistingProfile] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'tr'>(LanguageStore.getLanguage());
 
   // Check if user profile already exists
   useEffect(() => {
@@ -21,17 +24,29 @@ export default function UserProfileScreen() {
       setWeight(String(existingProfile.weight));
       setHasExistingProfile(true);
     }
+    
+    // Update language when it changes in the store
+    const intervalId = setInterval(() => {
+      const currentLang = LanguageStore.getLanguage();
+      if (currentLang !== language) {
+        setLanguage(currentLang);
+      }
+    }, 300);
+    
+    return () => clearInterval(intervalId);
   }, []);
+
+  const t = translations[language];
 
   const saveUserProfile = async () => {
     if (!age || !height || !weight) {
-      Alert.alert('Missing Information', 'Please fill in all fields');
+      Alert.alert(t.missingInfo, t.fillAllFields);
       return;
     }
 
     // Validate inputs are numbers
     if (isNaN(Number(age)) || isNaN(Number(height)) || isNaN(Number(weight))) {
-      Alert.alert('Invalid Input', 'Age, height, and weight must be numbers');
+      Alert.alert(t.invalidInput, t.numberValidation);
       return;
     }
 
@@ -51,14 +66,10 @@ export default function UserProfileScreen() {
       router.push('/');
     } catch (error) {
       console.error('Error saving user profile:', error);
-      Alert.alert('Error', 'Failed to save your information. Please try again.');
+      Alert.alert(t.error, t.failedToSave);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const skipProfile = () => {
-    router.push('/');
   };
 
   return (
@@ -66,16 +77,16 @@ export default function UserProfileScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.title}>Your profile</Text>
+          <Text style={styles.title}>{t.yourProfileTitle}</Text>
           <Text style={styles.subtitle}>
-            {hasExistingProfile ? 'Review and update your information' : 'Please enter your information'}
+            {hasExistingProfile ? t.reviewAndUpdate : t.pleaseEnterInfo}
           </Text>
           
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Age</Text>
+            <Text style={styles.inputLabel}>{t.age}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your age"
+              placeholder={t.enterYourAge}
               placeholderTextColor="#757575"
               keyboardType="number-pad"
               value={age}
@@ -84,10 +95,10 @@ export default function UserProfileScreen() {
           </View>
           
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Height (cm)</Text>
+            <Text style={styles.inputLabel}>{t.height}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your height in cm"
+              placeholder={t.enterYourHeight}
               placeholderTextColor="#757575"
               keyboardType="number-pad"
               value={height}
@@ -96,10 +107,10 @@ export default function UserProfileScreen() {
           </View>
           
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Weight (kg)</Text>
+            <Text style={styles.inputLabel}>{t.weight}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your weight in kg"
+              placeholder={t.enterYourWeight}
               placeholderTextColor="#757575"
               keyboardType="number-pad"
               value={weight}
@@ -113,12 +124,12 @@ export default function UserProfileScreen() {
             disabled={isSubmitting}
           >
             <Text style={styles.saveButtonText}>
-              {hasExistingProfile ? 'Update' : 'Save'}
+              {hasExistingProfile ? t.update : t.save}
             </Text>
           </TouchableOpacity>
           
           <Text style={styles.infoText}>
-            Your age, height, and weight help us provide personalized medicine information. This data is used to tailor dosage recommendations and other important details specific to your profile.
+            {t.profileInfoText}
           </Text>
         </View>
       </ScrollView>
@@ -206,5 +217,5 @@ const styles = StyleSheet.create({
     color: '#2c3e50',
     fontSize: 16,
     textDecorationLine: 'underline',
-  },
+  }
 }); 
