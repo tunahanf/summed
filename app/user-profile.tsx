@@ -78,9 +78,8 @@ export default function UserProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.title}>{t.yourProfileTitle}</Text>
-          <Text style={styles.subtitle}>
-            {hasExistingProfile ? t.reviewAndUpdate : t.pleaseEnterInfo}
-          </Text>
+          <Text style={styles.subtitle}>{t.yourProfileSubtitle}</Text>
+          <Text style={styles.subInfo}>{hasExistingProfile ? "" : t.pleaseEnterInfo}</Text>
           
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>{t.age}</Text>
@@ -156,9 +155,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 28,
+    fontWeight: 'bold',
     color: '#e76f51',
-    marginBottom: 15,
+    marginBottom: 0,
   },
   infoContainer: {
     backgroundColor: '#f2f7ff',
@@ -205,6 +205,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  subInfo: {
+    fontSize: 20,
+    color: '#758399',
+    marginBottom: 15,
   },
   skipButton: {
     backgroundColor: 'transparent',

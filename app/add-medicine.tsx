@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,8 @@ import { Medicine } from '../models/medicine';
 import { MedicineStore } from '../utils/medicineStore';
 import { NotificationManager } from '../utils/notificationManager';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { LanguageStore } from '../utils/languageStore';
+import { translations } from '../utils/translations';
 
 const dayOptions = [
   'Every Day',
@@ -30,6 +32,17 @@ const dayOptions = [
   'Friday',
   'Saturday',
   'Sunday',
+];
+
+const dayOptionsTR = [
+  'Her Gün',
+  'Pazartesi',
+  'Salı',
+  'Çarşamba',
+  'Perşembe',
+  'Cuma',
+  'Cumartesi',
+  'Pazar',
 ];
 
 const timeOptions = [
@@ -54,7 +67,8 @@ export default function AddMedicineScreen() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [customTime, setCustomTime] = useState(new Date());
   const [showTimePickerModal, setShowTimePickerModal] = useState(false);
-
+  const [language, setLanguage] = useState<'en' | 'tr'>('en');
+  
   // For iOS time picker
   const [selectedHour, setSelectedHour] = useState(10);
   const [selectedMinute, setSelectedMinute] = useState(0);
@@ -62,6 +76,46 @@ export default function AddMedicineScreen() {
   const [hourScrollRef, setHourScrollRef] = useState<ScrollView | null>(null);
   const [minuteScrollRef, setMinuteScrollRef] = useState<ScrollView | null>(null);
 
+  // Load language setting
+  useEffect(() => {
+    const loadLanguage = async () => {
+      const userLanguage = await LanguageStore.getLanguage();
+      setLanguage(userLanguage);
+    };
+    loadLanguage();
+  }, []);
+  
+  // Get translations for current language
+  const t = translations[language];
+  
+  // Get proper day options based on language
+  const getDayOptions = useCallback(() => {
+    return language === 'tr' ? dayOptionsTR : dayOptions;
+  }, [language]);
+  
+  // Map english day to turkish day and vice versa
+  const mapDay = useCallback((day: string) => {
+    const dayMap: { [key: string]: string } = {
+      'Every Day': 'Her Gün',
+      'Monday': 'Pazartesi',
+      'Tuesday': 'Salı',
+      'Wednesday': 'Çarşamba',
+      'Thursday': 'Perşembe',
+      'Friday': 'Cuma',
+      'Saturday': 'Cumartesi',
+      'Sunday': 'Pazar',
+      'Her Gün': 'Every Day',
+      'Pazartesi': 'Monday',
+      'Salı': 'Tuesday',
+      'Çarşamba': 'Wednesday',
+      'Perşembe': 'Thursday',
+      'Cuma': 'Friday',
+      'Cumartesi': 'Saturday',
+      'Pazar': 'Sunday',
+    };
+    return dayMap[day] || day;
+  }, []);
+  
   // Add effect to scroll to current time when modal appears
   useEffect(() => {
     if (showTimePickerModal && hourScrollRef && minuteScrollRef) {
@@ -80,19 +134,27 @@ export default function AddMedicineScreen() {
   const handleSave = async () => {
     // Validate inputs
     if (!medicineName.trim()) {
-      Alert.alert('Error', 'Please enter a medicine name');
+      Alert.alert(language === 'tr' ? 'Hata' : 'Error', 
+                 language === 'tr' ? 'Lütfen bir ilaç adı girin' : 'Please enter a medicine name');
       return;
     }
 
     if (selectedDays.length === 0) {
-      Alert.alert('Error', 'Please select at least one day');
+      Alert.alert(language === 'tr' ? 'Hata' : 'Error', 
+                 language === 'tr' ? 'Lütfen en az bir gün seçin' : 'Please select at least one day');
       return;
     }
 
     if (selectedTimes.length === 0) {
-      Alert.alert('Error', 'Please select at least one time');
+      Alert.alert(language === 'tr' ? 'Hata' : 'Error', 
+                 language === 'tr' ? 'Lütfen en az bir zaman seçin' : 'Please select at least one time');
       return;
     }
+
+    // Map selected days to English for storage if in Turkish
+    const daysToStore = language === 'tr' 
+      ? selectedDays.map(day => mapDay(day))
+      : selectedDays;
 
     // Create medicine object
     const newMedicine: Medicine = {
@@ -100,7 +162,7 @@ export default function AddMedicineScreen() {
       name: medicineName.trim(),
       dosage: dosage.trim(),
       schedule: {
-        days: selectedDays,
+        days: daysToStore,
         times: selectedTimes,
         customTimes: true, // Always set this flag to true since we now support mixed times
       },
@@ -123,31 +185,32 @@ export default function AddMedicineScreen() {
       // Navigate back to medicine tracker
       router.push('/medicine-tracker');
     } else {
-      Alert.alert('Error', 'Failed to save medicine. Please try again.');
+      Alert.alert(language === 'tr' ? 'Hata' : 'Error', 
+                 language === 'tr' ? 'İlaç kaydedilemedi. Lütfen tekrar deneyin.' : 'Failed to save medicine. Please try again.');
     }
   };
 
   const toggleDay = (day: string) => {
-    if (day === 'Every Day') {
+    if (day === (language === 'tr' ? 'Her Gün' : 'Every Day')) {
       if (selectedDays.includes(day)) {
         setSelectedDays(selectedDays.filter(d => d !== day));
       } else {
-        setSelectedDays(['Every Day']);
+        setSelectedDays([day]);
       }
     } else {
       if (selectedDays.includes(day)) {
         setSelectedDays(selectedDays.filter(d => d !== day));
       } else {
-        const newSelectedDays = selectedDays.filter(d => d !== 'Every Day');
+        const newSelectedDays = selectedDays.filter(d => d !== (language === 'tr' ? 'Her Gün' : 'Every Day'));
         const updatedDays = [...newSelectedDays, day];
         
-        const weekDays = dayOptions.filter(d => d !== 'Every Day');
+        const weekDays = getDayOptions().filter(d => d !== (language === 'tr' ? 'Her Gün' : 'Every Day'));
         const allDaysSelected = weekDays.every(weekDay => 
           updatedDays.includes(weekDay) || weekDay === day
         );
         
         if (allDaysSelected) {
-          setSelectedDays(['Every Day']);
+          setSelectedDays([language === 'tr' ? 'Her Gün' : 'Every Day']);
         } else {
           setSelectedDays(updatedDays);
         }
@@ -301,38 +364,38 @@ export default function AddMedicineScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={24} color="#062C63" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Add Medicine</Text>
+          <Text style={styles.headerTitle}>{language === 'tr' ? 'İlaç Ekle' : 'Add Medicine'}</Text>
           <View style={{ width: 24 }} />
         </View>
 
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Medicine Information</Text>
+          <Text style={styles.sectionTitle}>{language === 'tr' ? 'İlaç Bilgileri' : 'Medicine Information'}</Text>
           
-          <Text style={styles.inputLabel}>Medicine Name</Text>
+          <Text style={styles.inputLabel}>{language === 'tr' ? 'İlaç Adı' : 'Medicine Name'}</Text>
           <TextInput
             style={styles.textInput}
             value={medicineName}
             onChangeText={setMedicineName}
-            placeholder="Enter medicine name"
+            placeholder={language === 'tr' ? 'İlaç adını girin' : 'Enter medicine name'}
             placeholderTextColor="#a0a0a0"
           />
           
-          <Text style={styles.inputLabel}>Dosage</Text>
+          <Text style={styles.inputLabel}>{language === 'tr' ? 'Dozaj' : 'Dosage'}</Text>
           <TextInput
             style={styles.textInput}
             value={dosage}
             onChangeText={setDosage}
-            placeholder="e.g., 100mg (optional)"
+            placeholder={language === 'tr' ? 'örn., 100mg (isteğe bağlı)' : 'e.g., 100mg (optional)'}
             placeholderTextColor="#a0a0a0"
           />
         </View>
 
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Schedule</Text>
+          <Text style={styles.sectionTitle}>{language === 'tr' ? 'Program' : 'Schedule'}</Text>
           
-          <Text style={styles.inputLabel}>Days</Text>
+          <Text style={styles.inputLabel}>{language === 'tr' ? 'Günler' : 'Days'}</Text>
           <View style={styles.optionsContainer}>
-            {dayOptions.map(day => (
+            {getDayOptions().map(day => (
               <TouchableOpacity
                 key={day}
                 style={[
@@ -354,12 +417,14 @@ export default function AddMedicineScreen() {
           </View>
 
           <View style={styles.timesHeader}>
-            <Text style={styles.inputLabel}>Times</Text>
+            <Text style={styles.inputLabel}>{language === 'tr' ? 'Zamanlar' : 'Times'}</Text>
           </View>
 
           <View style={styles.optionsContainer}>
-            {/* Predefined times and custom times */}
+            {/* Predefined times */}
             {timeOptions.map(time => renderTimeOption(time))}
+            
+            {/* Custom times */}
             {customTimes.map(time => renderTimeOption(time))}
             
             {/* Add time button (always at the end) */}
@@ -388,10 +453,10 @@ export default function AddMedicineScreen() {
         </View>
 
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
+          <Text style={styles.sectionTitle}>{language === 'tr' ? 'Bildirimler' : 'Notifications'}</Text>
           
           <View style={styles.notificationSetting}>
-            <Text style={styles.notificationText}>Enable reminders</Text>
+            <Text style={styles.notificationText}>{language === 'tr' ? 'Hatırlatıcıları etkinleştir' : 'Enable reminders'}</Text>
             <Switch
               value={enableNotifications}
               onValueChange={setEnableNotifications}
@@ -403,13 +468,13 @@ export default function AddMedicineScreen() {
           
           <Text style={styles.notificationDescription}>
             {isWeb 
-              ? 'Notifications are not available on web platforms.'
-              : 'You will receive a notification 10 minutes before and at the scheduled time.'}
+              ? (language === 'tr' ? 'Web platformlarında bildirimler kullanılamaz.' : 'Notifications are not available on web platforms.')
+              : (language === 'tr' ? 'Planlanan zamandan 10 dakika önce ve zamanında bildirim alacaksınız.' : 'You will receive a notification 10 minutes before and at the scheduled time.')}
           </Text>
         </View>
 
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
+          <Text style={styles.saveButtonText}>{language === 'tr' ? 'Kaydet' : 'Save'}</Text>
         </TouchableOpacity>
 
         {/* Time Picker Modal for iOS */}
@@ -423,11 +488,11 @@ export default function AddMedicineScreen() {
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
                 <TouchableOpacity onPress={() => setShowTimePickerModal(false)}>
-                  <Text style={styles.modalCancelButton}>Cancel</Text>
+                  <Text style={styles.modalCancelButton}>{language === 'tr' ? 'İptal' : 'Cancel'}</Text>
                 </TouchableOpacity>
-                <Text style={styles.modalTitle}>Choose Time</Text>
+                <Text style={styles.modalTitle}>{language === 'tr' ? 'Zaman Seçin' : 'Choose Time'}</Text>
                 <TouchableOpacity onPress={confirmIOSTimePicker}>
-                  <Text style={styles.modalDoneButton}>Done</Text>
+                  <Text style={styles.modalDoneButton}>{language === 'tr' ? 'Tamam' : 'Done'}</Text>
                 </TouchableOpacity>
               </View>
               

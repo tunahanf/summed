@@ -80,7 +80,7 @@ export const getSummarizedLeaflet = async (medicineName: string, dosage: string,
       "Intended use:" başlığı altında ilacın ne için kullanıldığını açıkla. Asla maddeler halinde yazma, asla markdownda ** veya * gibi karakterler kullanma, düz metin şeklinde yaz.
       
       "How to use:" başlığı altında aşağıdaki alt başlıkları kullan:
-      "Initial dose:" başlığı altında başlangıç dozunu açıkla
+      "Initial dose:" başlığı altında başlangıç dozunu açıkla. Prospektüsteki dozajı kullan kişinin bilgilerini göz önünde bulundurarak söyle. Prospektüste bulunan dozajı uygula diyorsun faka senin görevin zaten bana prospektüsü okuyup özetlemek. Yani prospektüste önerilen dozajı söylemen lazım bana.
       "Administration:" başlığı altında ilacın nasıl alınacağını açıkla
       "Dosage adjustment:" başlığı altında doz ayarlamasını açıkla
       "Treatment duration:" başlığı altında tedavi süresini açıkla

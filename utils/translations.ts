@@ -8,7 +8,8 @@ export const translations = {
     yourProfile: 'Your profile',
     
     // User profile screen
-    yourProfileTitle: 'Your profile',
+    yourProfileTitle: 'Your',
+    yourProfileSubtitle: 'Profile',
     reviewAndUpdate: 'Review and update your information',
     pleaseEnterInfo: 'Please enter your information',
     age: 'Age',
@@ -33,7 +34,7 @@ export const translations = {
     provideMedicineInfo: 'Please provide the medicine information',
     medicineName: 'Medicine name',
     medicinePlaceholder: 'e.g., Parol',
-    dosage: 'Dosage(mg)',
+    dosage: 'Dosage (g/mg/ml)',
     dosagePlaceholder: 'e.g., 500',
     getSummarized: 'Get summarized leaflet',
     setupProfile: 'Set up your profile',
@@ -79,10 +80,9 @@ export const translations = {
     tapToStartScanning: 'Tap to start scanning',
     scanYour: 'Scan your',
     medicineBox: 'medicine box',
-    stopScanning: 'Stop Scanning',
-    setUpYourProfile: 'Set Up Your Profile',
+    stopScanning: 'Stop scanning',
+    setUpYourProfile: 'Set up your profile',
     back: 'Back',
-    
     // Leaflet screen
     summarizedLeafletFor: 'Summarized leaflet for',
     intendedUse: 'Intended use',
@@ -108,7 +108,8 @@ export const translations = {
     yourProfile: 'Profiliniz',
     
     // User profile screen
-    yourProfileTitle: 'Profiliniz',
+    yourProfileTitle: 'Kişisel',
+    yourProfileSubtitle: 'Profiliniz',
     reviewAndUpdate: 'Bilgilerinizi gözden geçirin ve güncelleyin',
     pleaseEnterInfo: 'Lütfen bilgilerinizi girin',
     age: 'Yaş',
@@ -130,10 +131,10 @@ export const translations = {
     // Manual medicine entry screen
     manualEntryTitle: 'Manuel ilaç girişi',
     enterMedicineDetails: 'İlaç detaylarını girin',
-    provideMedicineInfo: 'Lütfen ilaç bilgilerini sağlayın',
+    provideMedicineInfo: 'Lütfen ilaç bilgilerini girin',
     medicineName: 'İlaç adı',
     medicinePlaceholder: 'örn., Parol',
-    dosage: 'Dozaj(mg)',
+    dosage: 'Dozaj (g/mg/ml)',
     dosagePlaceholder: 'örn., 500',
     getSummarized: 'Özet prospektüs al',
     setupProfile: 'Profilinizi oluşturun',
@@ -178,13 +179,13 @@ export const translations = {
     cameraPermissionRequired: 'Kamera izni gerekli',
     tapToStartScanning: 'Taramaya başlamak için dokunun',
     scanYour: 'İlacınızı',
-    medicineBox: 'tarayın',
-    stopScanning: 'Taramayı Durdur',
-    setUpYourProfile: 'Profilinizi Oluşturun',
+    medicineBox: 'taratın',
+    stopScanning: 'Taramayı durdur',
+    setUpYourProfile: 'Profilinizi oluşturun',
     back: 'Geri',
-    
+
     // Leaflet screen
-    summarizedLeafletFor: 'İlaç özeti',
+    summarizedLeafletFor: 'Prospektüs özeti',
     intendedUse: 'Kullanım amacı',
     howToUse: 'Nasıl kullanılır',
     notRecommendedFor: 'Kullanılmaması gerekenler',
