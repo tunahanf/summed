@@ -148,52 +148,12 @@ summed/
 
 The application uses Google Gemini API for OCR operations. You need to define your API key in the `.env` file.
 
-For detailed integration information, you can refer to the `README_PYTHON_INTEGRATION.md` file.
-
 ## 🌐 Language Support
 
 The application supports the following languages:
 
 - 🇹🇷 Turkish
 - 🇬🇧 English
-
-Language switching feature will be added soon.
-
-## 📝 Development
-
-### Resetting the Project
-
-To start a fresh project:
-
-```bash
-npm run reset-project
-```
-
-This command backs up the current `app` directory as `app-example` and creates a new `app` directory.
-
-### Linting
-
-```bash
-npm run lint
-```
-
-## 📄 License
-
-This is a private project.
-
-## 🤝 Contributing
-
-Contributions are welcome! Before submitting a pull request, please:
-
-1. Fork the project
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📞 Contact
-
-For questions or suggestions, please contact us.
 
 ---
 
